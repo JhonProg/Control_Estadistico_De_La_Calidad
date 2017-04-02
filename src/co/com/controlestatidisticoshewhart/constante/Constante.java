@@ -52,6 +52,4 @@ public class Constante {
     public static final String REALIZANDO_CALCULOS_DE_RESULTADOS = "Realizando calculos de resultados...";
     public static final String TERMINADO = "TERMINADO";
     
-    
-    
 }
