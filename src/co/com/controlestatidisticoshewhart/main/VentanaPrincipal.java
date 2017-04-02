@@ -8,19 +8,38 @@ package co.com.controlestatidisticoshewhart.main;
 import co.com.controlestatidisticoshewhart.constante.Constante;
 import co.com.controlestatidisticoshewhart.logica.Calculo;
 import co.com.controlestatidisticoshewhart.objetos.Dato;
+import co.com.controlestatidisticoshewhart.objetos.DatosExcelSingleton;
 import co.com.controlestatidisticoshewhart.util.Util;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.DefaultTableModel;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hssf.util.HSSFColor;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Row;
 
 /**
  *
@@ -38,10 +57,14 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         initComponents();
         cargarValidadores();
         modeloTabla = new DefaultTableModel(null, configurarColumnasTabla());
+        jButton_guardarResultadosEnExcel.setEnabled(false);
     }
 
     private String[] configurarColumnasTabla(){
-        String columnas[] = new String[]{"Indice","Numero aleatorio","¿Superar limite inferior?","¿Superar limite superior?"};
+        String columnas[] = new String[]{Constante.INDICE,
+                                         Constante.DATO_ALEATORIO,
+                                         Constante.SUPERA_LIMITE_INFERIOR,
+                                         Constante.SUPERA_LIMITE_SUPERIOR};
         return columnas;
     }
     
@@ -158,6 +181,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         jLabel_tiempoEjecucionCalculoArl = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jButton_ejecutarSimulacion = new javax.swing.JButton();
+        jButton_guardarResultadosEnExcel = new javax.swing.JButton();
         jPanel6 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable_tablaDeDatos = new javax.swing.JTable();
@@ -371,10 +395,17 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Acciones", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(0, 51, 255))); // NOI18N
 
-        jButton_ejecutarSimulacion.setText("Ejecutar");
+        jButton_ejecutarSimulacion.setText("Ejecutar Simulación");
         jButton_ejecutarSimulacion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton_ejecutarSimulacionActionPerformed(evt);
+            }
+        });
+
+        jButton_guardarResultadosEnExcel.setText("Guardar Datos (Excel)");
+        jButton_guardarResultadosEnExcel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton_guardarResultadosEnExcelActionPerformed(evt);
             }
         });
 
@@ -384,14 +415,18 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton_ejecutarSimulacion)
+                .addComponent(jButton_ejecutarSimulacion, javax.swing.GroupLayout.PREFERRED_SIZE, 156, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(jButton_guardarResultadosEnExcel, javax.swing.GroupLayout.PREFERRED_SIZE, 181, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel5Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jButton_ejecutarSimulacion)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton_ejecutarSimulacion)
+                    .addComponent(jButton_guardarResultadosEnExcel))
                 .addContainerGap(19, Short.MAX_VALUE))
         );
 
@@ -514,6 +549,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     public void ejecutar(){
                         
             jButton_ejecutarSimulacion.setEnabled(false);
+            jButton_guardarResultadosEnExcel.setEnabled(false);
             
             Map parametrosGeneracionDatos = new HashMap();
             parametrosGeneracionDatos.put(Constante.NUMERO_DE_DATOS_GENERAR,jTextField_numeroDatosSimular.getText());
@@ -532,6 +568,10 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 mensaje(mensaje);
                 
                 List<Dato> datosGenerados = (List<Dato>)resultadoGeneracionDeDatos.get(Constante.LISTA_DATOS_GENERADOS);
+                
+                /** Seteo los datos en el Singleton para tenerlos en memoria con el objetivo de generar el excel.
+                 */
+                DatosExcelSingleton.getInstance().setListaDatosExcel(datosGenerados);
                 
                 mensaje(Constante.REALIZANDO_CALCULOS_DE_RESULTADOS);
                 Map resultadoCalculoARL = Calculo.calcularLongitudPromedioDeCorrida(datosGenerados);
@@ -593,6 +633,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         public void done(){
            jProgressBar_progreso.setIndeterminate(false);
            jButton_ejecutarSimulacion.setEnabled(true);
+           jButton_guardarResultadosEnExcel.setEnabled(true);
            mensaje(Constante.TERMINADO);
         }
        
@@ -625,6 +666,70 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         
     }//GEN-LAST:event_jButton_ejecutarSimulacionActionPerformed
 
+    private void jButton_guardarResultadosEnExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_guardarResultadosEnExcelActionPerformed
+        // TODO add your handling code here:
+        obtenerRutaGuardarArchivo();
+        
+    }//GEN-LAST:event_jButton_guardarResultadosEnExcelActionPerformed
+
+    private void obtenerRutaGuardarArchivo() {
+        try {
+            JFileChooser file = new JFileChooser();
+            file.showSaveDialog(this);
+            File guarda = file.getSelectedFile();
+
+            if (guarda != null) {
+                
+                String nombreArchivo = guarda.getAbsolutePath()+Constante.XLS;
+                
+                HSSFWorkbook workbook = new HSSFWorkbook();
+                HSSFSheet sheet = workbook.createSheet(Constante.TITULO_HOJA_DATOS); 
+                
+                List<Dato> datos = DatosExcelSingleton.getInstance().getListaDatosExcel();
+                
+                HSSFRow rowhead = sheet.createRow((short)0);
+                                
+                rowhead.createCell(0).setCellValue(Constante.INDICE);
+                rowhead.createCell(1).setCellValue(Constante.DATO_ALEATORIO);
+                rowhead.createCell(2).setCellValue(Constante.SUPERA_LIMITE_INFERIOR);
+                rowhead.createCell(3).setCellValue(Constante.SUPERA_LIMITE_SUPERIOR);
+                                
+                HSSFRow row = null;
+                int fila = 1;
+                for(int i=0;i<datos.size();i++){
+                    row = sheet.createRow(fila++);
+                    row.createCell(0).setCellValue(datos.get(i).getSecuencial());
+                    row.createCell(1).setCellValue(datos.get(i).getNumero());
+                    row.createCell(2).setCellValue(datos.get(i).isSobrePasaLimiteInferior());
+                    row.createCell(3).setCellValue(datos.get(i).isSobrePasaLimiteSuperior());
+                }
+                
+                sheet.autoSizeColumn(0);
+                sheet.autoSizeColumn(1);
+                sheet.autoSizeColumn(2);
+                sheet.autoSizeColumn(3);
+                
+                try (FileOutputStream fileOut = new FileOutputStream(nombreArchivo)) {
+                    workbook.write(fileOut);
+                }catch(Exception e){
+                    throw new Exception("Error al escribir el archivo. Intente de nuevo.");
+                }
+                
+                JOptionPane.showMessageDialog(null,"El archivo se ha guardado Exitosamente.",
+                        "Información", JOptionPane.INFORMATION_MESSAGE);
+            }else{
+                JOptionPane.showMessageDialog(null,
+                    "Debe seleccionar una ruta valida e ingresar el nombre del archivo.",
+                    "Advertencia", JOptionPane.WARNING_MESSAGE);
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            JOptionPane.showMessageDialog(null,
+                    "Su archivo no se ha guardado",
+                    "Advertencia", JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
     /**
      * Validar campos y parametros obligatorios.
      */
@@ -733,6 +838,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private Progreso progreso;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton_ejecutarSimulacion;
+    private javax.swing.JButton jButton_guardarResultadosEnExcel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel12;

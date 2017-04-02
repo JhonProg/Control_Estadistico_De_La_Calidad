@@ -53,4 +53,19 @@ public class Constante {
     public static final String REALIZANDO_CALCULOS_DE_RESULTADOS = "Realizando calculos de resultados...";
     public static final String TERMINADO = "TERMINADO";
     
+    /** Extension archivos.
+     */
+    public static final String XLS   = ".xls";
+    public static final String XLSX  = ".xlsx";
+    public static final String TXT   = ".txt";
+    public static final String PDF   = ".pdf";
+    
+    /**
+     * Datos de encabezado de archivo excel.
+     */
+    public static final String TITULO_HOJA_DATOS      = "DATOS";
+    public static final String INDICE                 = "INDICE";
+    public static final String DATO_ALEATORIO         = "DATO ALEATORIO";
+    public static final String SUPERA_LIMITE_INFERIOR = "¿SUPERA LIMITE INFERIROR?";
+    public static final String SUPERA_LIMITE_SUPERIOR = "¿SUPERA LIMITE SUPERIOR?";
 }
