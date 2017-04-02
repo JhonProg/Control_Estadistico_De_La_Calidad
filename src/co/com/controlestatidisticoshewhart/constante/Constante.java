@@ -61,11 +61,28 @@ public class Constante {
     public static final String PDF   = ".pdf";
     
     /**
-     * Datos de encabezado de archivo excel.
+     * Datos de encabezado de archivo excel Hoja Uno.
      */
     public static final String TITULO_HOJA_DATOS      = "DATOS";
     public static final String INDICE                 = "INDICE";
     public static final String DATO_ALEATORIO         = "DATO ALEATORIO";
     public static final String SUPERA_LIMITE_INFERIOR = "¿SUPERA LIMITE INFERIROR?";
     public static final String SUPERA_LIMITE_SUPERIOR = "¿SUPERA LIMITE SUPERIOR?";
+    
+    /**
+     * Datos de encabezado de archivo excel Hoja Dos.
+     */
+    public static final String TITULO_HOJA_RESULTADOS     = "RESULTADOS";
+    public static final String COLUMNA_LIMITE_INFERIOR    = "LIMITE INFERIOR";
+    public static final String COLUMNA_LIMITE_SUPERIOR    = "LIMITE SUPERIOR";
+    public static final String COLUMNA_MEDIA              = "MEDIA";
+    public static final String COLUMNA_DATOS_FUERA_LIMITE = "# DATOS FUERA DE LIMITE";
+    public static final String COLUMNA_ARL                = "LONGITUD PROMEDIO CORRIDA (ARL)";
+        
+    /**
+     * Mensajes de generacion de archivos.
+     */
+    public static final String GENERANDO_ARCHIVO_EXCEL_CON_RESULTADOS_ESPERE = "Generando reporte excel con resultados. Por favor espere.";
+    public static final String ARCHIVO_EXCEL_CON_RESULTADOS_GENERADO = "Reporte excel con resultados generado con exito.";
+    
 }

@@ -6,7 +6,9 @@
 package co.com.controlestatidisticoshewhart.objetos;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -16,6 +18,7 @@ public class DatosExcelSingleton {
 
     private static DatosExcelSingleton instance = null;
     private List<Dato> listaDatosExcel          = new ArrayList<>();
+    private Map resultadosDeCalculo             = new HashMap();
 
     protected DatosExcelSingleton() {}
 
@@ -33,4 +36,13 @@ public class DatosExcelSingleton {
     public void setListaDatosExcel(List<Dato> listaDatosExcel) {
         this.listaDatosExcel = listaDatosExcel;
     }
+
+    public Map getResultadosDeCalculo() {
+        return resultadosDeCalculo;
+    }
+
+    public void setResultadosDeCalculo(Map resultadosDeCalculo) {
+        this.resultadosDeCalculo = resultadosDeCalculo;
+    }
+    
 }

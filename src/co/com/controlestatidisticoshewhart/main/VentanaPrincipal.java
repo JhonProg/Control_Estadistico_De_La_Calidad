@@ -556,7 +556,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             parametrosGeneracionDatos.put(Constante.MEDIA, jTextField_media.getText());
             parametrosGeneracionDatos.put(Constante.DESVIACION_ESTANDAR, jTextField_desviacionEstandar.getText());
             parametrosGeneracionDatos.put(Constante.LIMITE_CONTROL_INFERIOR, Integer.parseInt(jTextField_limiteDeControlInferior.getText()));
-            parametrosGeneracionDatos.put(Constante.LIMITE_CONTROL_SUPERIOR, jTextField_limiteDeControlSuperior.getText());
+            parametrosGeneracionDatos.put(Constante.LIMITE_CONTROL_SUPERIOR, Integer.parseInt(jTextField_limiteDeControlSuperior.getText()));
             
             mensaje(Constante.GENERANDO_NUMEROS_ALEATORIOS);
             Map resultadoGeneracionDeDatos = Calculo.generarDatosAleatoriosConDistribucionNormal(parametrosGeneracionDatos);
@@ -569,12 +569,20 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 
                 List<Dato> datosGenerados = (List<Dato>)resultadoGeneracionDeDatos.get(Constante.LISTA_DATOS_GENERADOS);
                 
-                /** Seteo los datos en el Singleton para tenerlos en memoria con el objetivo de generar el excel.
+                /** Seteo los datos [Datos generados] en el Singleton para tenerlos en memoria con el objetivo de generar el excel.
                  */
                 DatosExcelSingleton.getInstance().setListaDatosExcel(datosGenerados);
                 
                 mensaje(Constante.REALIZANDO_CALCULOS_DE_RESULTADOS);
                 Map resultadoCalculoARL = Calculo.calcularLongitudPromedioDeCorrida(datosGenerados);
+                
+                /** Agrego datos de limites de control. */
+                resultadoCalculoARL.put(Constante.LIMITE_CONTROL_INFERIOR, Integer.parseInt(jTextField_limiteDeControlInferior.getText()));
+                resultadoCalculoARL.put(Constante.LIMITE_CONTROL_SUPERIOR, Integer.parseInt(jTextField_limiteDeControlSuperior.getText()));
+                
+                /** Seteo los datos [Resultados] en el Singleton para tenerlos en memoria con el objetivo de generar el excel.
+                 */
+                DatosExcelSingleton.getInstance().setResultadosDeCalculo(resultadoCalculoARL);
                 
                 Boolean calculoArlEjecutado = Boolean.valueOf(resultadoCalculoARL.get(Constante.CALCULO_ARL_EJECUTADO).toString());
                 
@@ -645,7 +653,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private void jButton_ejecutarSimulacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_ejecutarSimulacionActionPerformed
          if(camposValidos()){
             
-             jLabel_limites.setText("( -"+jTextField_limiteDeControlInferior.getText()+" , "+jTextField_limiteDeControlSuperior.getText()+" )");
+             jLabel_limites.setText("( "+jTextField_limiteDeControlInferior.getText()+" , "+jTextField_limiteDeControlSuperior.getText()+" )");
             jLabel_media.setText("0");
             jLabel_cantidadDatosFueraDeLimite.setText("0");
             jLabel_arl.setText("0");
@@ -668,8 +676,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
     private void jButton_guardarResultadosEnExcelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton_guardarResultadosEnExcelActionPerformed
         // TODO add your handling code here:
+        jButton_ejecutarSimulacion.setEnabled(false);
+        jButton_guardarResultadosEnExcel.setEnabled(false);
+        mensaje(Constante.GENERANDO_ARCHIVO_EXCEL_CON_RESULTADOS_ESPERE);
         obtenerRutaGuardarArchivo();
-        
+        jButton_ejecutarSimulacion.setEnabled(true);
+        jButton_guardarResultadosEnExcel.setEnabled(true);
     }//GEN-LAST:event_jButton_guardarResultadosEnExcelActionPerformed
 
     private void obtenerRutaGuardarArchivo() {
@@ -682,48 +694,85 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                 
                 String nombreArchivo = guarda.getAbsolutePath()+Constante.XLS;
                 
-                HSSFWorkbook workbook = new HSSFWorkbook();
-                HSSFSheet sheet = workbook.createSheet(Constante.TITULO_HOJA_DATOS); 
+                HSSFWorkbook workbook            = new HSSFWorkbook();
+                HSSFSheet hojaUnoDatosGenerados  = workbook.createSheet(Constante.TITULO_HOJA_DATOS); 
+                HSSFSheet hojaDosDatosResultados = workbook.createSheet(Constante.TITULO_HOJA_RESULTADOS); 
                 
-                List<Dato> datos = DatosExcelSingleton.getInstance().getListaDatosExcel();
+                List<Dato> datosGenerados = DatosExcelSingleton.getInstance().getListaDatosExcel();
+                Map resultadosCalculo     = DatosExcelSingleton.getInstance().getResultadosDeCalculo();
                 
-                HSSFRow rowhead = sheet.createRow((short)0);
-                                
+                HSSFRow rowhead = hojaUnoDatosGenerados.createRow((short)0);
+                /** Encabezado hoja uno. */
                 rowhead.createCell(0).setCellValue(Constante.INDICE);
                 rowhead.createCell(1).setCellValue(Constante.DATO_ALEATORIO);
                 rowhead.createCell(2).setCellValue(Constante.SUPERA_LIMITE_INFERIOR);
                 rowhead.createCell(3).setCellValue(Constante.SUPERA_LIMITE_SUPERIOR);
-                                
+                
+                HSSFRow rowheadHojaDos = hojaDosDatosResultados.createRow((short)0);
+                /** Encabezado hoja dos. */
+                rowheadHojaDos.createCell(0).setCellValue(Constante.COLUMNA_LIMITE_INFERIOR);
+                rowheadHojaDos.createCell(1).setCellValue(Constante.COLUMNA_LIMITE_SUPERIOR);
+                rowheadHojaDos.createCell(2).setCellValue(Constante.COLUMNA_MEDIA);
+                rowheadHojaDos.createCell(3).setCellValue(Constante.COLUMNA_DATOS_FUERA_LIMITE);
+                rowheadHojaDos.createCell(4).setCellValue(Constante.COLUMNA_ARL);
+                
+                /**
+                 * Escribir en hoja uno.
+                 */
                 HSSFRow row = null;
                 int fila = 1;
-                for(int i=0;i<datos.size();i++){
-                    row = sheet.createRow(fila++);
-                    row.createCell(0).setCellValue(datos.get(i).getSecuencial());
-                    row.createCell(1).setCellValue(datos.get(i).getNumero());
-                    row.createCell(2).setCellValue(datos.get(i).isSobrePasaLimiteInferior());
-                    row.createCell(3).setCellValue(datos.get(i).isSobrePasaLimiteSuperior());
+                for(int i=0;i<datosGenerados.size();i++){
+                    row = hojaUnoDatosGenerados.createRow(fila++);
+                    row.createCell(0).setCellValue(datosGenerados.get(i).getSecuencial());
+                    row.createCell(1).setCellValue(datosGenerados.get(i).getNumero());
+                    row.createCell(2).setCellValue(datosGenerados.get(i).isSobrePasaLimiteInferior());
+                    row.createCell(3).setCellValue(datosGenerados.get(i).isSobrePasaLimiteSuperior());
                 }
                 
-                sheet.autoSizeColumn(0);
-                sheet.autoSizeColumn(1);
-                sheet.autoSizeColumn(2);
-                sheet.autoSizeColumn(3);
+                /** 
+                 * Escribir en hoja dos.
+                 */
+                HSSFRow filaResultados = null;
+                filaResultados = hojaDosDatosResultados.createRow(1);
+                filaResultados.createCell(0).setCellValue(resultadosCalculo.get(Constante.LIMITE_CONTROL_INFERIOR).toString());
+                filaResultados.createCell(1).setCellValue(resultadosCalculo.get(Constante.LIMITE_CONTROL_SUPERIOR).toString());
+                filaResultados.createCell(2).setCellValue(resultadosCalculo.get(Constante.MEDIA_DATOS_EXTREMOS).toString());
+                filaResultados.createCell(3).setCellValue(resultadosCalculo.get(Constante.CANTIDAD_DATOS_EXTREMOS).toString());
+                filaResultados.createCell(4).setCellValue(resultadosCalculo.get(Constante.AVERAGE_RUN_LENGTH).toString());
+                
+                /**
+                 * Ajustar columnas hoja uno.
+                 */
+                hojaUnoDatosGenerados.autoSizeColumn(0);
+                hojaUnoDatosGenerados.autoSizeColumn(1);
+                hojaUnoDatosGenerados.autoSizeColumn(2);
+                hojaUnoDatosGenerados.autoSizeColumn(3);
+                
+                /**
+                 * Ajustar columnas hoja dos.
+                 */
+                hojaDosDatosResultados.autoSizeColumn(0);
+                hojaDosDatosResultados.autoSizeColumn(1);
+                hojaDosDatosResultados.autoSizeColumn(2);
+                hojaDosDatosResultados.autoSizeColumn(3);
+                hojaDosDatosResultados.autoSizeColumn(4);
                 
                 try (FileOutputStream fileOut = new FileOutputStream(nombreArchivo)) {
                     workbook.write(fileOut);
                 }catch(Exception e){
                     throw new Exception("Error al escribir el archivo. Intente de nuevo.");
                 }
-                
+                mensaje(Constante.ARCHIVO_EXCEL_CON_RESULTADOS_GENERADO);
                 JOptionPane.showMessageDialog(null,"El archivo se ha guardado Exitosamente.",
                         "Información", JOptionPane.INFORMATION_MESSAGE);
             }else{
+                mensaje("Debe seleccionar una ruta valida e ingresar el nombre del archivo.");
                 JOptionPane.showMessageDialog(null,
                     "Debe seleccionar una ruta valida e ingresar el nombre del archivo.",
                     "Advertencia", JOptionPane.WARNING_MESSAGE);
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+             mensaje("Error al generar el archivo.Intentelo de nuevo.");
             JOptionPane.showMessageDialog(null,
                     "Su archivo no se ha guardado",
                     "Advertencia", JOptionPane.WARNING_MESSAGE);
