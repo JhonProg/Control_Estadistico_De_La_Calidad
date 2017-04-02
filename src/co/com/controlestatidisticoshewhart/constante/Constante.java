@@ -22,8 +22,9 @@ public class Constante {
     public static final String CALCULO_ARL_NO_EJECUTADO_DATOS_NULOS        = "Calculo de ARL no ejecutado. la lista de datos es nula.";
     public static final String CALCULO_ARL_NO_EJECUTADO_SIN_DATOS          = "Calculo de ARL no ejecutado. la lista de datos esta vacia.";
     public static final String CALCULO_ARL_EJECUTADO_CON_EXITO             = "Calculo de ARL ejecutado con exito.";
- 
- 
+    public static final String LIMITE_INFERIOR_MAYOR_A_LIMITE_INFERIOR     = "El limite inferior no puede ser mayor al limite superior.";
+    public static final String ERROR_AL_CONVERTIR_LOS_LIMITES              = "Error al validar los limites.";
+    
     /** Parámetros */
     public static final String NUMERO_DE_DATOS_GENERAR = "numeroDatosGenerar";
     public static final String MEDIA                   = "media";

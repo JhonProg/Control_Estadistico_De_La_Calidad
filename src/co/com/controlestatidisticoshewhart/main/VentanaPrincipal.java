@@ -66,7 +66,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
               char c = e.getKeyChar();
               if (!((c >= '0') && (c <= '9') ||
                  (c == KeyEvent.VK_BACK_SPACE) ||
-                 (c == KeyEvent.VK_DELETE))) {
+                 (c == KeyEvent.VK_DELETE) || (c=='-'))) {
                 getToolkit().beep();
                 e.consume();
                 mensaje(Constante.DEBE_DIGITAR_SOLO_NUMEROS);
@@ -81,7 +81,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
               char c = e.getKeyChar();
               if (!((c >= '0') && (c <= '9') ||
                  (c == KeyEvent.VK_BACK_SPACE) ||
-                 (c == KeyEvent.VK_DELETE))) {
+                 (c == KeyEvent.VK_DELETE) || (c=='-'))) {
                 getToolkit().beep();
                 e.consume();
                 mensaje(Constante.DEBE_DIGITAR_SOLO_NUMEROS);
@@ -96,7 +96,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
               char c = e.getKeyChar();
               if (!((c >= '0') && (c <= '9') ||
                  (c == KeyEvent.VK_BACK_SPACE) ||
-                 (c == KeyEvent.VK_DELETE))) {
+                 (c == KeyEvent.VK_DELETE) || (c=='-'))) {
                 getToolkit().beep();
                 e.consume();
                 mensaje(Constante.DEBE_DIGITAR_SOLO_NUMEROS);
@@ -111,7 +111,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
               char c = e.getKeyChar();
               if (!((c >= '0') && (c <= '9') ||
                  (c == KeyEvent.VK_BACK_SPACE) ||
-                 (c == KeyEvent.VK_DELETE))) {
+                 (c == KeyEvent.VK_DELETE) || (c=='-'))) {
                 getToolkit().beep();
                 e.consume();
                 mensaje(Constante.DEBE_DIGITAR_SOLO_NUMEROS);
@@ -143,7 +143,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         jTextField_limiteDeControlInferior = new javax.swing.JTextField();
         jLabel6 = new javax.swing.JLabel();
         jTextField_limiteDeControlSuperior = new javax.swing.JTextField();
-        jLabel11 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         jLabel_arl = new javax.swing.JLabel();
@@ -253,8 +252,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
 
         jLabel6.setText("Limite de control superior * :");
 
-        jLabel11.setText("--");
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -262,15 +259,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 154, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(jLabel11)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTextField_limiteDeControlInferior, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel6)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jTextField_limiteDeControlSuperior, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(53, Short.MAX_VALUE))
+                .addContainerGap(85, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -280,8 +275,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                     .addComponent(jLabel5)
                     .addComponent(jTextField_limiteDeControlInferior, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel6)
-                    .addComponent(jTextField_limiteDeControlSuperior, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel11))
+                    .addComponent(jTextField_limiteDeControlSuperior, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -525,7 +519,7 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             parametrosGeneracionDatos.put(Constante.NUMERO_DE_DATOS_GENERAR,jTextField_numeroDatosSimular.getText());
             parametrosGeneracionDatos.put(Constante.MEDIA, jTextField_media.getText());
             parametrosGeneracionDatos.put(Constante.DESVIACION_ESTANDAR, jTextField_desviacionEstandar.getText());
-            parametrosGeneracionDatos.put(Constante.LIMITE_CONTROL_INFERIOR, Integer.parseInt(jTextField_limiteDeControlInferior.getText())*-1);
+            parametrosGeneracionDatos.put(Constante.LIMITE_CONTROL_INFERIOR, Integer.parseInt(jTextField_limiteDeControlInferior.getText()));
             parametrosGeneracionDatos.put(Constante.LIMITE_CONTROL_SUPERIOR, jTextField_limiteDeControlSuperior.getText());
             
             mensaje(Constante.GENERANDO_NUMEROS_ALEATORIOS);
@@ -662,7 +656,18 @@ public class VentanaPrincipal extends javax.swing.JFrame {
                         if(Util.esNuloOVacio(limiteControlSuperior)){
                             mensaje(Constante.FALTA_LIMITE_CONTROL_SUPERIOR_POR_COMPLETAR); 
                         }else{
-                            resultadoValidacion = true;
+                            try{
+                                int inLimiteControlInferior = Integer.parseInt(limiteControlInferior);
+                                int inLimiteControlSuperior = Integer.parseInt(limiteControlSuperior);
+                                
+                                if(inLimiteControlInferior>=inLimiteControlSuperior){
+                                    mensaje(Constante.LIMITE_INFERIOR_MAYOR_A_LIMITE_INFERIOR);
+                                }else{
+                                    resultadoValidacion = true;
+                                }  
+                            }catch(Exception e){
+                                mensaje(Constante.ERROR_AL_CONVERTIR_LOS_LIMITES);
+                            }                         
                         }
                     }
                 }
@@ -730,7 +735,6 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     private javax.swing.JButton jButton_ejecutarSimulacion;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel15;
